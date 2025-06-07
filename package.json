@@ -1,0 +1,48 @@
+{
+  "name": "gather",
+  "version": "1.0.0",
+  "description": "A collaborative, over-the-air recipe, grocery list, and meal planning app for families, roommates, or any shared household. Built with React Native + Expo, backed by Firebase.",
+  "private": true,
+  "workspaces": [
+    "mobile",
+    "backend"
+  ],
+  "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"npm run start:mobile\"",
+    "start:backend": "cd backend && npm start",
+    "start:mobile": "cd mobile && npm start",
+    "install:all": "npm install && npm run install:mobile && npm run install:backend",
+    "install:mobile": "cd mobile && npm install",
+    "install:backend": "cd backend && npm install",
+    "test": "npm run test:mobile && npm run test:backend",
+    "test:mobile": "cd mobile && npm test",
+    "test:backend": "cd backend && npm test"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.4.1",
+    "firebase": "^11.9.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haywood-d-johnson/gather.git"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "firebase",
+    "recipe",
+    "grocery",
+    "meal-planning"
+  ],
+  "author": "Haywood D. Johnson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/haywood-d-johnson/gather/issues"
+  },
+  "homepage": "https://github.com/haywood-d-johnson/gather#readme"
+}

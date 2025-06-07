@@ -1,0 +1,58 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "presence": {
+      "$householdId": {
+        ".read": "auth != null && root.child('households').child($householdId).child('members').child(auth.uid).exists()",
+        "$userId": {
+          ".write": "auth != null && auth.uid == $userId",
+          "status": {
+            ".validate": "newData.val() === 'online' || newData.val() === 'offline'"
+          },
+          "lastSeen": {
+            ".validate": "newData.isNumber()"
+          },
+          "currentScreen": {
+            ".validate": "newData.isString()"
+          }
+        }
+      }
+    },
+
+    "groceryListLive": {
+      "$householdId": {
+        ".read": "auth != null && root.child('households').child($householdId).child('members').child(auth.uid).exists()",
+        "$listId": {
+          ".write": "auth != null && root.child('households').child($householdId).child('members').child(auth.uid).exists()",
+          "activeUsers": {
+            "$userId": {
+              ".validate": "auth.uid == $userId",
+              "status": {
+                ".validate": "newData.val() === 'viewing' || newData.val() === 'editing'"
+              },
+              "lastActivity": {
+                ".validate": "newData.isNumber()"
+              }
+            }
+          },
+          "recentChanges": {
+            "$changeId": {
+              ".validate": "newData.hasChildren(['itemId', 'action', 'by', 'timestamp'])",
+              "action": {
+                ".validate": "newData.val() === 'add' || newData.val() === 'remove' || newData.val() === 'check' || newData.val() === 'uncheck'"
+              },
+              "by": {
+                ".validate": "newData.val() === auth.uid"
+              },
+              "timestamp": {
+                ".validate": "newData.isNumber() && newData.val() <= now"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

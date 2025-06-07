@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUserInHousehold(householdId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid));
+    }
+
+    function hasHouseholdRole(householdId, role) {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid)).data.role == role;
+    }
+
+    function isHouseholdAdmin(householdId) {
+      return hasHouseholdRole(householdId, 'admin');
+    }
+
+    function isOwnerOrAdmin(householdId) {
+      return isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        isHouseholdAdmin(householdId)
+      );
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+      allow delete: if false; // Users cannot be deleted, only deactivated
+    }
+
+    // Households collection
+    match /households/{householdId} {
+      allow read: if isUserInHousehold(householdId);
+      allow create: if isAuthenticated();
+      allow update: if isHouseholdAdmin(householdId);
+      allow delete: if isOwnerOrAdmin(householdId);
+
+      // Nested members subcollection
+      match /members/{memberId} {
+        allow read: if isUserInHousehold(householdId);
+        allow write: if isHouseholdAdmin(householdId);
+      }
+    }
+
+    // Recipes collection
+    match /recipes/{recipeId} {
+      allow read: if isUserInHousehold(resource.data.householdId);
+      allow create: if isUserInHousehold(request.resource.data.householdId);
+      allow update: if isUserInHousehold(resource.data.householdId);
+      allow delete: if isOwnerOrAdmin(resource.data.householdId);
+    }
+
+    // Grocery Lists collection
+    match /groceryLists/{listId} {
+      allow read: if isUserInHousehold(resource.data.householdId);
+      allow create: if isUserInHousehold(request.resource.data.householdId);
+      allow update: if isUserInHousehold(resource.data.householdId);
+      allow delete: if isOwnerOrAdmin(resource.data.householdId);
+    }
+
+    // Meal Plans collection
+    match /mealPlans/{planId} {
+      allow read: if isUserInHousehold(resource.data.householdId);
+      allow create: if isUserInHousehold(request.resource.data.householdId);
+      allow update: if isUserInHousehold(resource.data.householdId);
+      allow delete: if isOwnerOrAdmin(resource.data.householdId);
+    }
+  }
+}
